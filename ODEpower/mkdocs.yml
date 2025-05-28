@@ -1,0 +1,22 @@
+site_name: ODEpower Documentation
+repo_url: https://github.com/yourusername/ODEpower
+nav:
+  - Home: docs/index.md
+  - API Reference:
+      - ODEpower: docs/api/ODEpower.md
+      - ODEgraph: docs/api/ODEgraph.md
+      - ODEtool: docs/api/ODEtool.md
+      - ODEsimulation: docs/api/ODEsimulation.md
+      - ODEplot: docs/api/ODEplot.md
+      - ODEmatlab: docs/api/ODEmatlab.md
+  - Getting Started: docs/getting_started.md
+  - Examples:
+      - Create Grid (Symbolic): docs/example_create_grid.md
+      - Simulate Grid (Numerical): docs/example_simulate_grid.md
+      - Simulink Co-Simulation: docs/example_simulink.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [ODEpower]
