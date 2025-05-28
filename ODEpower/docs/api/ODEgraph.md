@@ -1,3 +1,3 @@
 # ODEgraph
 
-::: ODEpower.ODEgraph.ODEgraph
+::: ODEpower.ODEgraph
