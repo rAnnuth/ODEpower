@@ -1,3 +1,3 @@
 # ODEmatlab
 
-::: ODEpower.ODEmatlab.ODEmatlab
+::: ODEpower.ODEmatlab

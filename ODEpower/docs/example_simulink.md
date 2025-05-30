@@ -7,6 +7,7 @@ This example demonstrates how to:
 - Visualize results
 
 ## Steps Covered
+
 1. Importing ODEpower and Components
 2. Creating the ODEpower grid object
 3. Adding components with numerical parameters
@@ -22,6 +23,7 @@ This example demonstrates how to:
 ---
 
 ```python
+# (Optional) Enable autoreload for interactive development (Jupyter/IPython)
 %reload_ext autoreload
 %autoreload 2
 

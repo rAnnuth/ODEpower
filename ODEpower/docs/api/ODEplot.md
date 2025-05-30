@@ -1,3 +1,3 @@
 # ODEplot
 
-::: ODEpower.ODEplot.ODEplot
+::: ODEpower.ODEplot

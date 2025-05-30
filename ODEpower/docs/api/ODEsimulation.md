@@ -1,3 +1,3 @@
 # ODEsimulation
 
-::: ODEpower.ODEsimulation.ODEsimulation
+::: ODEpower.ODEsimulation
