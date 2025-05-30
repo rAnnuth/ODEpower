@@ -22,12 +22,12 @@ setuptools.setup(
         'control',
         'tabulate',
         'networkx',
-        # 'matlabengine==24.2.2', # Uncomment if available via pip
+        'matlabengine==24.2.2', # Uncomment if available via pip
     ],
     include_package_data=True,
     classifiers=[
         'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU v3 License',
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.7',

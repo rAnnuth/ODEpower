@@ -1,5 +1,14 @@
 site_name: ODEpower Documentation
-repo_url: https://github.com/yourusername/ODEpower
+repo_url: https://github.com/rAnnuth/ODEpower
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand  # This keeps the navigation bar expanded
+    - navigation.indexes
+
 nav:
   - Home: index.md
   - API Reference:
@@ -9,14 +18,20 @@ nav:
       - ODEsimulation: api/ODEsimulation.md
       - ODEplot: api/ODEplot.md
       - ODEmatlab: api/ODEmatlab.md
+      - Connection Equations: api/connection_equations.md
   - Getting Started: getting_started.md
   - Examples:
       - Create Grid (Symbolic): example_create_grid.md
       - Simulate Grid (Numerical): example_simulate_grid.md
       - Simulink Co-Simulation: example_simulink.md
+
 plugins:
   - search
   - mkdocstrings:
-      handlers:
-        python:
-          paths: [ODEpower]
+      default_handler: python
+
+extra:
+  mkdocstrings:
+    handlers:
+      python:
+        paths: ["."]
