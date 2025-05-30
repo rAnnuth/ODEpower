@@ -51,4 +51,4 @@ Contributions are welcome! Please open issues or pull requests on GitHub.
 
 ## License
 
-This project is licensed under the GNU 3.0 License. See `LICENSE.txt` for details.
+This project is licensed under the GNU v3 License. See `LICENSE.txt` for details.
