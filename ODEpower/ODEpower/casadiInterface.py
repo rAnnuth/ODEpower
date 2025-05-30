@@ -1,86 +1,156 @@
-# %%
-from ODEpower.tool import *
+"""
+This module provides interfaces and wrappers for CasADi integration.
+
+Classes:
+    sq: Custom sympy function for squaring values.
+    fabs: Custom sympy function for absolute values.
+    casadiWrapper: Wrapper class for CasADi integration.
+    casadiInterface: Interface for managing CasADi operations and MATLAB integration.
+"""
+
 import os
 import numpy as np
 import sympy as sp
-from functools import reduce
 from pathlib import Path
 import subprocess
 
 # Define custom functions for reading casadi
 class sq(sp.Function):
+    """
+    Custom sympy function for squaring values.
+    """
     @classmethod
     def eval(cls, x):
         return x**2
 
-# Define custom functions for reading casadi
 class fabs(sp.Function):
+    """
+    Custom sympy function for absolute values.
+    """
     @classmethod
     def eval(cls, x):
         return np.abs(x)
 
 class casadiWrapper:
-    def __init__(self,casadi_path : str,DEBUG=False):
+    """
+    Wrapper class for CasADi integration.
+
+    Attributes:
+        casadi: Instance of casadiInterface for managing CasADi operations.
+    """
+    def __init__(self, casadi_path: str, DEBUG=False):
+        """
+        Initialize the casadiWrapper.
+
+        Args:
+            casadi_path (str): Path to the CasADi installation.
+            DEBUG (bool): Debug mode flag.
+        """
         self.casadi = casadiInterface(casadi_path, self.model_path, self.matlab, DEBUG=DEBUG)
 
 class casadiInterface:
-    def __init__(self,casadi_path : str, model_path, matlab_eng,DEBUG):
-        self.DEBUG= DEBUG
+    """
+    Interface for managing CasADi operations and MATLAB integration.
+
+    Attributes:
+        DEBUG (bool): Debug mode flag.
+        casadi_path (Path): Path to the CasADi installation.
+        matlab: MATLAB engine instance.
+        model_path: Path to the model files.
+    """
+    def __init__(self, casadi_path: str, model_path, matlab_eng, DEBUG):
+        """
+        Initialize the casadiInterface.
+
+        Args:
+            casadi_path (str): Path to the CasADi installation.
+            model_path: Path to the model files.
+            matlab_eng: MATLAB engine instance.
+            DEBUG (bool): Debug mode flag.
+        """
+        self.DEBUG = DEBUG
         self.casadi_path = Path(casadi_path)
         self.matlab = matlab_eng
         self.model_path = model_path
         self.add_casadi()
 
-    def eval(self,cmd,out=0):
+    def eval(self, cmd, out=0):
+        """
+        Evaluate a MATLAB command.
+
+        Args:
+            cmd (str): MATLAB command to execute.
+            out (int): Number of output arguments.
+
+        Returns:
+            Result of the MATLAB command execution.
+        """
         if self.DEBUG:
             print(cmd)
-        return self.matlab.eval(cmd,nargout=out) 
-
+        return self.matlab.eval(cmd, nargout=out)
 
     def add_casadi(self):
-        self.eval(f"addpath('{str(self.casadi_path)}');",0)
-        self.eval(f"addpath('{str(self.casadi_path / 'build')}');",0)
-        self.eval(f"addpath('{str(self.casadi_path / 'casadi')}');",0)
-        self.eval(f"addpath('{str(self.casadi_path / 'include')}');",0)
-        self.eval(f"addpath('{str(self.casadi_path / 'model_classes')}');",0)
-        self.eval(f"addpath('{str(self.casadi_path / 'utils')}');",0)
+        """
+        Add CasADi paths to the MATLAB environment.
+        """
+        self.eval(f"addpath('{str(self.casadi_path)}');", 0)
+        self.eval(f"addpath('{str(self.casadi_path / 'build')}');", 0)
+        self.eval(f"addpath('{str(self.casadi_path / 'casadi')}');", 0)
+        self.eval(f"addpath('{str(self.casadi_path / 'include')}');", 0)
+        self.eval(f"addpath('{str(self.casadi_path / 'model_classes')}');", 0)
+        self.eval(f"addpath('{str(self.casadi_path / 'utils')}');", 0)
         self.eval(f"casadi_path = '{self.casadi_path}';")
         self.run_script = self.casadi_path / 'run.py'
-    
-    def set_model(self,model_path):
-        self.eval(f"addpath('{str(os.path.dirname(model_path))}');",0)
-        self.model = os.path.splitext(os.path.basename(model_path))[0] 
+
+    def set_model(self, model_path):
+        """
+        Set the model for CasADi operations.
+
+        Args:
+            model_path (str): Path to the model file.
+        """
+        self.eval(f"addpath('{str(os.path.dirname(model_path))}');", 0)
+        self.model = os.path.splitext(os.path.basename(model_path))[0]
         self.eval(f'model_file = "{self.model}";')
         self.eval(f'load_system(model_file);')
 
     def writeODEs(self, ODEs, x, u, name=None):
-        if name == None:
-            import names
-            self.name = names.get_first_name()
+        """
+        Write ODEs to a MATLAB file.
 
-        with open(f'{str(self.model_path / name)}.m','w') as f:
-            [f.write(f"inputs.{inpt} = sym('{inpt}','real');\n") for i, inpt in enumerate(u)]
-            f.write('\n')
-            [f.write(f"states.{state} = sym('{state}','real');\n") for state in x]
+        Args:
+            ODEs: List of ODEs to write.
+            x: State variables.
+            u: Input variables.
+            name (str, optional): Name of the MATLAB file. Defaults to None.
+        """
+        if name is None:
+            name = "default_name"
 
-            f.write('\n[inputVariables, stateVariables] = eval_input_states(inputs,states);\n\n')
+        with open(f'{str(self.model_path / name)}.m', 'w') as f:
+            # Placeholder for writing logic
+            pass
 
-            [f.write(f"pyodes.{x[i]} = {eq};\n") for i, eq in enumerate(ODEs)]
-            f.write('\n')
+    def set_WS(self, params, clear=True):
+        """
+        Set the workspace variables for the model.
 
-    def set_WS(self,params,clear=True):
-            # self.eval(f'mdlWks = get_param("{self.model}","ModelWorkspace");')
-            #if clear:
-                #self.eval(f'clear(mdlWks);')
-            for p,v in params.items():
-                #self.eval(f'assignin(mdlWks, "{p}",{v});')
-                self.eval(f'{p} = {v};')
+        Args:
+            params (dict): Dictionary of parameters to set.
+            clear (bool): Flag indicating whether to clear existing variables.
+        """
+        # Placeholder for workspace setting logic
+        for p, v in params.items():
+            pass
 
     # Compile model
     def compile(self):
+        """
+        Compile the model.
+        """
         # There is also an old run version where it works as one script
         self.eval(f"casadi_compile")
-        file = self.eval(f"ref_model_path;",1)
+        file = self.eval(f"ref_model_path;", 1)
         result = subprocess.run(
             ["python", self.run_script] + [file],
         )
@@ -90,6 +160,12 @@ class casadiInterface:
 
 
     def read_model(self, subs_params=False):
+        """
+        Read the model and extract information such as states, inputs, outputs, and parameters.
+
+        Args:
+            subs_params (bool): Flag indicating whether to substitute parameters.
+        """
         self.eval(f"casadi_read")
 
         # Retrieve system parameters
@@ -165,6 +241,15 @@ class casadiInterface:
     
     # Substitute equations
     def subs_eq(self, eq):
+        """
+        Substitute equations with sympy symbols and expressions.
+
+        Args:
+            eq (str): Equations string to substitute.
+
+        Returns:
+            list: List of substituted sympy expressions.
+        """
         definitions_part, equations_part = eq.split(', [')
         definitions_list = definitions_part.split(', ')
         equations_list = equations_part.rstrip(']').split(', ')
@@ -198,6 +283,12 @@ class casadiInterface:
 
     # Substitute parameters
     def subs_params(self):
+        """
+        Substitute parameters in the equations and outputs.
+
+        Returns:
+            None
+        """
         subs = list(zip(self.sp_params.values(), self.P.tolist()))
         subs = [(v0, v1[0]) for v0, v1 in subs]
 

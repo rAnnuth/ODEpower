@@ -4,5 +4,4 @@ from .ODEplot import ODEplot
 from .ODEmatlab import ODEmatlab
 from .ODEsimulation import ODEsimulation
 from .ODEtool import ODEtool
-from .config import Config
-from .tool import prettyPlot
+from .config import settings

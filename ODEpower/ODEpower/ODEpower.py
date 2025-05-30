@@ -11,7 +11,7 @@ class ODEpower(ODEgraph, ODEtool, ODEsimulation, ODEplot):
     Inherits from ODEgraph, ODEtool, ODEsimulation, and ODEplot to combine graph construction, mathematical tools, simulation, and plotting.
     Optionally attaches MATLAB backend functionality if enabled in the configuration.
     """
-    def __init__(self, config, *args, **kwargs):
+    def __init__(self, config=None, *args, **kwargs):
         """
         Initialize the ODEpower system.
 
@@ -19,6 +19,9 @@ class ODEpower(ODEgraph, ODEtool, ODEsimulation, ODEplot):
             config: Configuration object containing simulation and backend options.
             *args, **kwargs: Additional arguments passed to parent classes.
         """
+        if config == None:
+            import ODEpower.config
+            config = ODEpower.config.settings()
         # Step 1: Store debug flag and configuration for later use
         self.DEBUG = config.DEBUG
         self.LOG = config.LOG

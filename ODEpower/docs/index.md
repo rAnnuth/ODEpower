@@ -2,8 +2,8 @@
 
 Welcome to the documentation for the ODEpower package. This site provides an overview of the package, its main classes, and usage examples.
 
-- [API Reference](api/)
 - [Getting Started](getting_started.md)
+- [API Reference](api/)
 
 ---
 

@@ -6,8 +6,6 @@ import os
 
 
 pgf = os.getenv('pgf')
-if os.getenv('paper'):
-    pgf = True
 if pgf:
     from matplotlib.backends.backend_pgf import FigureCanvasPgf
     mpl.backend_bases.register_backend('pgf', FigureCanvasPgf)
@@ -33,12 +31,7 @@ plt.rcParams['legend.loc'] = 'upper center'
 plt.rcParams['legend.fancybox'] = True
 plt.rcParams['figure.dpi'] = 300
 
-#plt.rcParams['mathtext.default'] =  'regular' 
-
 # Set global font properties
-#plt.rcParams['font.family'] = 'Arial'
-#plt.rcParams['font.family'] = 'Times New Roman'
-#plt.rcParams['font.weight'] = 'normal'  # You can adjust this as needed
 plt.rcParams.update({'font.size': 10})
 
 
@@ -59,41 +52,18 @@ if pgf:
     # rm ~/.cache/matplotlib -rf
 
     plt.rcParams.update({
-        #"pgf.texsystem": "lualatex",
-        #"pgf.texsystem": "xelatex",
         "pgf.texsystem": "pdflatex",
         "font.family": "serif",
         "pgf.rcfonts": False,  # Do not use rc parameters for font setup
-        #"font.sans-serif": "Arial",
         "text.usetex": True, # use inline math for ticks
-        #"font.sans-serif": ["Comic Sans MS"],
-        #"font.cursive": [ "Comic Neue", "Comic Sans MS"],
         "figure.figsize": [default_width, default_width * default_ratio],
-        "pgf.preamble": "\n".join([
-            #r'\usepackage[LGRgreek]{mathastext}'
-            #r'\usepackage{SI}'
-            # package and macros definitions are also possible, e.g.:
-            # has to be pdflatex and xelatex compatible
-        ]),
     })
 
 
 class plot:
-    def __init__(self, subplots=[], sharex=False, default=False, h_scale=-1, w_scale=-1,*args,**kwargs):
+    def __init__(self, subplots=[], sharex=False, default=False, h_scale=1, w_scale=1,*args,**kwargs):
         self.sharex = sharex
         if not default:
-            if w_scale == -1:
-                if os.getenv('p2c'):
-                    w_scale = .5
-                else:
-                    w_scale = 1
-
-            if h_scale == -1:
-                if os.getenv('p2c'):
-                    h_scale = 2
-                else:
-                    h_scale = 1.2
-
             self.fig = plt.figure(figsize=(8.3*w_scale, 11.7/h_scale))
             if sharex:
                 if subplots==[2,1]:
@@ -238,7 +208,6 @@ class plot:
         
         
 
-class plot_projection:
     def __init__(self,projection='3d', w_scale=1, *args, **kwargs):
         self.figure = plt.figure(figsize=(8.3*w_scale, 11.7/1.1),*args,**kwargs)
         self.axis = np.array([
@@ -274,47 +243,3 @@ class plot_projection:
 
     def savefig(filename, *args, **kwargs):
         plt.savefig(filename, *args, **kwargs) #'.pgf' or '.pdf'
-
-
-
-#locator = mdates.AutoDateLocator(minticks=3, maxticks=7)
-#formatter = mdates.ConciseDateFormatter(locator)
-#formatter.formats = ['%y',          # ticks are mostly years
-#                        '%b',       # ticks are mostly months
-#                        '%d',       # ticks are mostly days
-#                        '%H:%M',    # hrs
-#                        '%H:%M',    # min
-#                        '%S.%f', ]  # secs
-#
-#formatter.offset_formats = ['',
-#                            '%Y',
-#                            '%b %Y',
-#                            '%d %b %Y',
-#                            '%d %b %Y',
-#                            '%d %b %Y %H:%M', ]
-#ax.xaxis.set_major_locator(locator)
-#ax.xaxis.set_major_formatter(formatter)
-
-#num = 15 
-#date_format(ax[0])
-#tick = [ts.strftime('%b\n%Y') if ts.year != x.index[idx-1].year
-#                    else ts.strftime('%d-%H') for idx, ts in enumerate(x.index[::num])]
-#
-#ax[0].set_xticks(x.index[::num],tick)
-
-def write_eig_table(filepath, eig_info):
-    fd = eig_info["fd"]
-    fo = eig_info["fo"]
-    
-    with open(filepath, "w") as f:
-        f.write("\\begin{tabular}{ccc}\n")
-        f.write("\\toprule\n")
-        #f.write("Mode & Damping Frequency in \\unit{Hz} & Natural Frequency in \\unit{Hz} \\\\\n")
-        f.write("Mode & \\shortstack{Damping Frequency\\\\ in \\unit{Hz}} & \\shortstack{Natural Frequency\\\\ in \\unit{Hz}} \\\\\n")
-
-        f.write("\\midrule\n")
-        for i, (d, o) in enumerate(zip(fd, fo), 1):
-            nat_freq = 0 if abs(o) < 1e-12 else f"{abs(o):.4e}"
-            f.write(f"{i} & {d:.4e} & {nat_freq} \\\\\n")
-        f.write("\\bottomrule\n")
-        f.write("\\end{tabular}\n")

@@ -1,18 +1,29 @@
-import numpy as np
-from ODEpower.tool import *
+"""
+Module for simulation routines in ODEpower.
+
+This module provides the `ODEsimulation` class for simulating ODE and state-space models.
+
+Classes:
+    ODEsimulation: Provides simulation routines for ODE and state-space models.
+"""
+
+from ODEpower.ODEtool import dotdict
 import matplotlib.pyplot as plt
-import scipy.integrate as spi
-from scipy.signal import lsim
-from scipy.interpolate import interp1d
-from scipy.optimize import linear_sum_assignment
-from scipy.interpolate import interp1d
 import numpy as np
+import scipy.integrate as spi
+from scipy.interpolate import interp1d
+from scipy.signal import lsim
 import sympy as sp
 
 
 class ODEsimulation:
     """
     Provides simulation routines for ODE and state-space models, including numerical integration and parameter sweeps.
+
+    Methods:
+        sim_ss: Simulate the state-space system.
+        sim_ode: Simulate the ODE system.
+        parametric_ode: Perform parametric analysis of ODEs.
     """
     def __init__(self, *args, **kwargs):
         """
@@ -148,26 +159,18 @@ class ODEsimulation:
 
     def sim_ode(self, setOp=False, Tsim=-1, save_y=True, rtol=1e-6, atol=1e-8, max_step=1e-3):
         """
-        Simulate the ODE system using scipy's solve_ivp with performance optimizations.
-
-        This version uses:
-            - Precomputed input interpolation (no per-step argmin)
-            - Vectorized lambdified functions for ODEs and outputs
-            - Efficient handling of state and output arrays
+        Simulate the ODE system using scipy's solve_ivp.
 
         Args:
-            setOp: If True, use the operating point as the initial state. Otherwise, start from zero.
-            Tsim: Simulation end time. If -1, use the value from simulation parameters.
-            save_y: If True, compute and store output trajectories.
-            rtol: Relative tolerance for the ODE solver.
-            atol: Absolute tolerance for the ODE solver.
-            max_step: Maximum time step allowed by the solver.
+            setOp (bool): If True, use the operating point as the initial state. Otherwise, start from zero.
+            Tsim (float): Simulation end time. If -1, use the value from simulation parameters.
+            save_y (bool): If True, compute and store output trajectories.
+            rtol (float): Relative tolerance for the ODE solver.
+            atol (float): Absolute tolerance for the ODE solver.
+            max_step (float): Maximum time step allowed by the solver.
 
-        Populates:
-            self.sol_ode: A dotdict with keys:
-                - 't': time vector (1D numpy array)
-                - 'x': state trajectories (dict of variable name → time series)
-                - 'y': output trajectories (2D numpy array), if save_y is True
+        Returns:
+            None
         """
         # Step 1: Determine simulation time span
         t_span = [0, self.params['sim_params']['Tsim']] if Tsim == -1 else [0, Tsim]

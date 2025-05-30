@@ -1,13 +1,27 @@
-import numpy as np
-from ODEpower.tool import *
+"""
+Module for MATLAB backend integration in ODEpower.
+
+This module provides the `ODEmatlab` class for managing MATLAB operations, including operating point calculation, simulation, and model management.
+
+Classes:
+    ODEmatlab: Provides MATLAB backend integration for ODEpower.
+"""
+
+from ODEpower.ODEtool import dotdict
 import matlab.engine
-from pathlib import Path
+import numpy as np
 import os
+from pathlib import Path
 
 
 class ODEmatlab:
     """
     Provides MATLAB backend integration for ODEpower, including operating point calculation, simulation, and model management.
+
+    Attributes:
+        parent: The ODEpower instance using this backend.
+        LOG (bool): Logging flag from the configuration.
+        model_path (Path): Path to the MATLAB model files.
     """
     def __init__(self, parent):
         """
@@ -54,7 +68,8 @@ class ODEmatlab:
         Calculate the operating point using MATLAB's vpasolve.
 
         Args:
-            initialGuess: If True, use an initial guess for the solver.
+            initialGuess (bool): If True, use an initial guess for the solver.
+
         Raises:
             ValueError: If unable to find the operating point.
         """
@@ -114,7 +129,7 @@ class ODEmatlab:
         Set the input values for Simulink simulation in MATLAB workspace.
 
         Args:
-            simulink_params: Dictionary of Simulink-specific parameters.
+            simulink_params (dict): Dictionary of Simulink-specific parameters.
         """
         #self.set_model_input(v0,v1,show=show)
 
@@ -217,7 +232,7 @@ class ODEmatlab:
         if save:
             x_ODE = np.array(self.eval('Y_nl;',1))
             x_ODE = {str(self.x_str[i]) : x_ODE[:,i] for i in range(len(self.x))}
-            t_ODE = np.array(self.eval('t_nl;',1))
+            t_ODE = np.array(self.eval('t_nl;', 1))
             self.sol_ode = dotdict({'t':t_ODE, 'x':x_ODE})
         else:
             return np.array(self.eval('Y_nl(end,:);',1))
@@ -288,8 +303,3 @@ class ODEmatlab:
         if self.parent.DEBUG:
             print(cmd)
         return self.matlab.eval(cmd, nargout=out)
-"""
-
-
-
-"""

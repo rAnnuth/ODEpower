@@ -1,3 +1,12 @@
+"""
+Module for mathematical tools in ODEpower.
+
+This module provides the `ODEtool` class for manipulating ODE and DAE systems, including state-space conversion, eigenvalue analysis, and operating point calculation.
+
+Classes:
+    ODEtool: Provides mathematical tools for ODE and DAE systems.
+"""
+
 import numpy as np
 import pandas as pd
 import sympy as sp
@@ -12,6 +21,12 @@ from scipy.signal import ss2tf
 class ODEtool:
     """
     Provides mathematical tools for manipulating ODE and DAE systems, including state-space conversion, eigenvalue analysis, and operating point calculation.
+
+    Methods:
+        combine_odes_algebraic: Eliminate algebraic variables from the DAE system.
+        set_input_values: Set the input values for simulation.
+        get_eig: Compute eigenvalues and participation factors.
+        read_casadi: Read CasADi models.
     """
     def __init__(self, *args, **kwargs):
         """
@@ -23,7 +38,11 @@ class ODEtool:
     def combine_odes_algebraic(self):
         """
         Eliminate algebraic variables from the DAE system to obtain a pure ODE system.
+
         Updates self.odes by substituting solutions for algebraic variables (self.z).
+
+        Returns:
+            None
         """
         # Step 1: Solve algebraic equations for algebraic variables
         alg_sol = sp.solve(self.algebraic, self.z)
@@ -37,11 +56,12 @@ class ODEtool:
         Set the input values for simulation, including step changes and simulation parameters.
 
         Args:
-            v0: Initial input values (array-like).
-            v1: Final input values (array-like, optional).
-            params: Simulation parameters dictionary.
-            show: If True, print the input table.
-            dt: Small time increment for step change.
+            v0 (array-like): Initial input values.
+            v1 (array-like, optional): Final input values.
+            params (dict): Simulation parameters dictionary.
+            show (bool): If True, print the input table.
+            dt (float): Small time increment for step change.
+
         Raises:
             ValueError: If input lengths do not match.
         """
@@ -357,4 +377,35 @@ class ODEtool:
                 self.u_val = np.vstack([self.u_val, row])
         
 
-        
+###########################
+class dotdict(dict):
+    """
+    Dictionary with dot notation access to attributes.
+    Example:
+        d = dotdict({'a': 1})
+        d.a == 1
+    """
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+###########################
+
+def map_nested_dicts(ob, func):
+    """
+    Recursively apply a function to all non-dict values in a nested dictionary.
+
+    Args:
+        ob (dict): The dictionary to process.
+        func (callable): Function to apply to each non-dict value.
+
+    Returns:
+        dict: The processed dictionary with the function applied to all non-dict values.
+    """
+    for k, v in ob.items():
+        if isinstance(v, dict):
+            ob[k] = dotdict(v)
+            map_nested_dicts(ob[k], func)
+        else:
+            ob[k] = func(v)
+    return ob

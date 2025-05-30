@@ -1,3 +1,9 @@
+![](src/icon.png)
+
+<p align="center">
+<a href="https://odepower.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/odepower/badge/?version=latest"></a>
+</p>
+
 
 # ODEsim
 
@@ -23,18 +29,6 @@ or, for development:
 git clone https://github.com/yourusername/ODEsim.git
 cd ODEpower
 pip install -e .
-```
-
-## Usage
-
-```python
-from ODEpower.ODEpower.tool import read_mat_script, map_nested_dicts
-
-# Read variables from a MATLAB script
-variables = read_mat_script('params.m')
-
-# Apply a function to all values in a nested dict
-result = map_nested_dicts(variables, lambda x: x)
 ```
 
 ## Documentation

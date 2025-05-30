@@ -1,3 +1,12 @@
+"""
+Module for constructing and managing the network graph of the power system.
+
+This module provides the `ODEgraph` class for handling nodes, edges, and equation aggregation.
+
+Classes:
+    ODEgraph: Represents the network graph of the power system.
+"""
+
 #%%
 from components.connection import AlgebraicEquation
 from components.components_electric import *
@@ -12,12 +21,23 @@ import matplotlib.pyplot as plt
 class ODEgraph:
     """
     Class for constructing and managing the network graph of the power system.
+
     Handles nodes (components), edges (connections), and equation aggregation.
+
+    Attributes:
+        graph (nx.Graph): Undirected graph representing the grid.
+        equation_generator (AlgebraicEquation): Equation generator for the graph.
+        sim_params (dict): Simulation parameters.
     """
     def __init__(self, *args, **kwargs):
         """
         Initialize the ODEgraph object.
+
         Creates an empty undirected graph and sets up the equation generator.
+
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
         """
         super().__init__(*args, **kwargs)
         self.graph = nx.Graph()  # Undirected graph to represent the grid
@@ -38,6 +58,7 @@ class ODEgraph:
 
         Args:
             component: The component object to add (must have .id and .get()).
+
         Raises:
             ValueError: If the node already exists.
         """
@@ -53,8 +74,9 @@ class ODEgraph:
 
         Args:
             node_id: The node identifier.
+
         Returns:
-            Tuple of (x, u, params) for the node.
+            tuple: A tuple of (x, u, params) for the node.
         """
         return self.graph.nodes[node_id]['x'], self.graph.nodes[node_id]['u'], self.graph.nodes[node_id]['params']
     
@@ -83,6 +105,7 @@ class ODEgraph:
 
         Args:
             input_names: List of input variable names (as strings).
+
         Raises:
             ValueError: If an input is not found in the existing input list.
         """
@@ -238,6 +261,7 @@ class ODEgraph:
 
         Args:
             node_id: The node identifier.
+
         Raises:
             Exception: If unable to formulate the KCL for the node.
         """
@@ -305,6 +329,7 @@ class ODEgraph:
         Args:
             key: One of 'u', 'x', 'odes', 'algebraic', 'eig', 'op'.
             id: Optional node id to restrict output.
+
         Raises:
             ValueError: If key is not recognized.
         """

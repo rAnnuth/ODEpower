@@ -11,6 +11,11 @@ theme:
 
 nav:
   - Home: index.md
+  - Getting Started: getting_started.md
+  - Examples:
+      - Create Grid (Symbolic): example_create_grid.md
+      - Simulate Grid (Numerical): example_simulate_grid.md
+      - Simulink Co-Simulation: example_simulink.md
   - API Reference:
       - ODEpower: api/ODEpower.md
       - ODEgraph: api/ODEgraph.md
@@ -19,11 +24,6 @@ nav:
       - ODEplot: api/ODEplot.md
       - ODEmatlab: api/ODEmatlab.md
       - Connection Equations: api/connection_equations.md
-  - Getting Started: getting_started.md
-  - Examples:
-      - Create Grid (Symbolic): example_create_grid.md
-      - Simulate Grid (Numerical): example_simulate_grid.md
-      - Simulink Co-Simulation: example_simulink.md
 
 plugins:
   - search

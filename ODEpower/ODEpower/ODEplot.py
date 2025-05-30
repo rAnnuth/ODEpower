@@ -1,32 +1,35 @@
-#try:
-    #from phd.prettyPlot import plot
-#except:
-    # Not fully supported flag for choice required
-    #import matplotlib.pyplot as plt
-    #plot = plt.figure
-from tool.prettyPlot import plot
-import numpy as np
-import matplotlib.cm as cm
-import matplotlib.patches as patches
-from matplotlib.colors import Normalize
-import matplotlib.pyplot as plt
-import control as ct
-import sympy as sp
-import re
+"""
+Module for plotting utilities in ODEpower.
+
+This module provides the `ODEplot` class for visualizing system properties, including eigenvalues, participation factors, and state trajectories.
+
+Classes:
+    ODEplot: Provides plotting utilities for ODEpower.
+"""
 
 class ODEplot:
+    """
+    Provides plotting utilities for visualizing system properties.
+
+    Methods:
+        plot_eig: Plot the eigenvalues of the system.
+        plot_pf: Plot participation factors of the system.
+        plot_states: Plot state trajectories.
+        plot_inputs: Plot input trajectories.
+        plot_tf: Plot transfer functions.
+    """
     def plot_eig(self, damping=[], max=200, param_list=[], n_max=np.inf):
         """
         Plot the eigenvalues of the system.
 
         Args:
-        - damping (list): List of damping ratios to plot.
-        - max (int): Maximum number of eigenvalues to plot.
-        - eigs (bool): Flag indicating whether to use precomputed eigenvalues.
-        - n_max (int): Maximum number of eigenvalues to display annotations for.
+            damping (list): List of damping ratios to plot.
+            max (int): Maximum number of eigenvalues to plot.
+            param_list (list): List of parameters for eigenvalue analysis.
+            n_max (int): Maximum number of eigenvalues to display annotations for.
 
         Returns:
-        None
+            None
         """
         D, P = self.get_eig(getPF=False)
 
@@ -60,14 +63,18 @@ class ODEplot:
         Plot Participation Factors (PFs) of the system.
 
         Args:
-        - lims (list): Lower and upper limits for color normalization.
-        - method (str): Method for calculating PFs ('sum' or 'max').
-        - reduce (bool): Flag to reduce PFs by combining similar states.
-        - PFs (array): Array of PFs if provided externally.
-        - fs (int): Font size for plot labels.
+            lims (list): Lower and upper limits for color normalization.
+            order (bool): Whether to order the PFs.
+            method (str): Method for calculating PFs ('sum' or 'max').
+            reduce (dict): Reduction options for PFs.
+            order_x (list): Custom order for x-axis.
+            order_y (list): Custom order for y-axis.
+            fs (int): Font size for plot labels.
+            w_scale (float): Width scaling factor for the plot.
+            h_scale (float): Height scaling factor for the plot.
 
         Returns:
-        None
+            None
         """
         stateVariables = [str(k) for k in self.x]
         D, PF = self.get_eig()
@@ -186,11 +193,11 @@ class ODEplot:
         Plot the states over time.
 
         Args:
-        - states (list): List of states to plot. If empty, all states will be plotted.
-        - skip (list): List of strings specifying which results to skip plotting. ['SS,'ODE',Simulink]
+            states (list): List of states to plot. If empty, all states will be plotted.
+            skip (list): List of strings specifying which results to skip plotting. ['SS,'ODE',Simulink]
 
         Returns:
-        None
+            None
         """
         if len(states) == 0:
             states = self.x
@@ -331,14 +338,14 @@ class ODEplot:
         Plot Participation Factors (PFs) of the system.
 
         Args:
-        - lims (list): Lower and upper limits for color normalization.
-        - method (str): Method for calculating PFs ('sum' or 'max').
-        - reduce (bool): Flag to reduce PFs by combining similar states.
-        - PFs (array): Array of PFs if provided externally.
-        - fs (int): Font size for plot labels.
+            lims (list): Lower and upper limits for color normalization.
+            method (str): Method for calculating PFs ('sum' or 'max').
+            reduce (bool): Flag to reduce PFs by combining similar states.
+            PFs (array): Array of PFs if provided externally.
+            fs (int): Font size for plot labels.
 
         Returns:
-        None
+            None
         """
         stateVariables = [k for k in self.x]
         N = self.PFs.shape[0]
@@ -509,13 +516,12 @@ class ODEplot:
         Plot the eigenvalues of the system.
 
         Args:
-        - damping (list): List of damping ratios to plot.
-        - max (int): Maximum number of eigenvalues to plot.
-        - eigs (bool): Flag indicating whether to use precomputed eigenvalues.
-        - n_max (int): Maximum number of eigenvalues to display annotations for.
+            damping (list): List of damping ratios to plot.
+            max (int): Maximum number of eigenvalues to plot.
+            n_max (int): Maximum number of eigenvalues to display annotations for.
 
         Returns:
-        None
+            None
         """
         param_list = self.parametric_val 
 
@@ -586,10 +592,10 @@ class ODEplot:
         Reshape a 3D array into a 2D array.
 
         Args:
-        - arr (array): 3D array to be reshaped.
+            arr (array): 3D array to be reshaped.
 
         Returns:
-        - reshaped_list (array): 2D array after reshaping.
+            reshaped_list (array): 2D array after reshaping.
 
         # Transpose to shape (n_states, n_modes, n_params)
         arr_transposed = np.transpose(arr, (1, 2, 0))
@@ -613,13 +619,13 @@ def plot_PFs_im(self, lims=[0, 1], method='sum', reduce=False, fs=6, w_scale=1, 
     Plot Participation Factors (PFs) of the system.
 
     Args:
-    - lims (list): Lower and upper limits for color normalization.
-    - method (str): Method for calculating PFs ('sum' or 'max').
-    - reduce (bool): Flag to reduce PFs by combining similar states.
-    - fs (int): Font size for plot labels.
+        lims (list): Lower and upper limits for color normalization.
+        method (str): Method for calculating PFs ('sum' or 'max').
+        reduce (bool): Flag to reduce PFs by combining similar states.
+        fs (int): Font size for plot labels.
 
     Returns:
-    None
+        None
     """
     stateVariables = [k for k in self.x]
     N = self.PFs.shape[0]
@@ -675,4 +681,3 @@ def plot_PFs_im(self, lims=[0, 1], method='sum', reduce=False, fs=6, w_scale=1, 
 
     ax.grid(which='minor', color='k', linestyle='-', linewidth=0.3)
     ax.tick_params(which='minor', size=0)
-    
