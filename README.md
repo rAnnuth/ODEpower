@@ -1,25 +1,27 @@
 
 # ODEsim
 
-ODEsim is a Python package for simulating and analyzing ordinary differential equation (ODE) models, with a focus on power systems and AC ODE models.
+ODEpower is a Python package for modeling, simulating, and analyzing ODE-based power system grid. It provides a unified interface for graph construction, mathematical tools, simulation, plotting, and MATLAB backend integration.
 
 ## Features
 
+- Integrated DC ODE models
 - Integrated AC ODE models
-- Tools for reading and processing MATLAB scripts
-- Utilities for working with nested dictionaries
 - Modular component-based modeling for power electronics and control
+- Stability, interaction and modal analysis
+- Time-domain simulation of systems
+- Tools for reading and processing MATLAB Simulink Simulation
 - Extensive test suite for model validation
 
 ## Installation
 
 ```bash
-pip install .
+pip install ODEpower
 ```
 or, for development:
 ```bash
 git clone https://github.com/yourusername/ODEsim.git
-cd ODEsim
+cd ODEpower
 pip install -e .
 ```
 
@@ -37,9 +39,9 @@ result = map_nested_dicts(variables, lambda x: x)
 
 ## Documentation
 
-Full documentation is available at [https://odesim.readthedocs.io](https://odesim.readthedocs.io) (after setup).
+Full documentation is available at [https://odepower.readthedocs.io](https://odepower.readthedocs.io)
 
-To build the docs locally:
+To build the docs locally (with the requirements of ODEpower/requirements.txt):
 ```bash
 cd ODEpower
 mkdocs serve
