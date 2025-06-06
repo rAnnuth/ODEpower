@@ -16,23 +16,24 @@ class AlgebraicEquation:
         """
         self.graph = graph
         self.component_equations = {
-            ('piLine', 'loadVarRL'): self.eq_piLine_loadVarRL, # Not testes
-            ('piLine', 'loadVarR'): self.eq_piLine_loadVarR, # Not testes
-            #('dabFHA', 'piLine'): self.eq_dabFHA_piLine, # Not testes
+            ('piLine', 'loadVarRL'): self.eq_piLine_loadVarRL, 
+            ('piLine', 'loadVarR'): self.eq_piLine_loadVarR, 
+            ('piLine', 'loadR'): self.eq_piLine_loadR, 
+            ('piLine', 'piLine'): self.eq_piLine_piLine,
+            ('piLine', 'dabGAM'): self.eq_piLine_dabGAM,
+            ('VsourceR', 'piLine'): self.eq_VsourceR_piLine,
+            ('VsourceR', 'dabGAM'): self.eq_VsourceR_dabGAM,
+            ('dabGAM', 'loadVarRL'): self.eq_dabGAM_loadVarRL,
+            ('dabGAM', 'loadRL'): self.eq_dabGAM_loadRL,
             ('dabGAM', 'piLine'): self.eq_dabGAM_piLine,
+            ('dabGAM', 'loadVarR'): self.eq_dabGAM_loadVarR,
+            #('dabFHA', 'piLine'): self.eq_dabFHA_piLine, # Not testes
             #('boost', 'piLine'): self.eq_boost_piLine,
             #('buck', 'piLine'): self.eq_buck_piLine,
             #('buck', 'loadVarRL'): self.eq_buck_loadRL,
             #('buck', 'loadRL'): self.eq_buck_loadRL,
-            ('dabGAM', 'loadVarR'): self.eq_dabGAM_loadVarR,
-            ('piLine', 'dabGAM'): self.eq_piLine_dabGAM,
             #('piLine', 'boost'): self.eq_piLine_boost,
-            ('piLine', 'piLine'): self.eq_piLine_piLine,
-            ('VsourceR', 'piLine'): self.eq_VsourceR_piLine,
-            ('VsourceR', 'dabGAM'): self.eq_VsourceR_dabGAM,
             #('VsourceR', 'boost'): self.eq_VsourceR_boost,
-            ('dabGAM', 'loadVarRL'): self.eq_dabGAM_loadVarRL,
-            ('dabGAM', 'loadRL'): self.eq_dabGAM_loadRL,
         }
 
     def get_info(self, node1, node2):
@@ -102,6 +103,17 @@ class AlgebraicEquation:
         Cline_r = self.graph.nodes[node1]['params'][f'R_c_{node1}']
         return sp.Matrix([
             x_1.v_Cout + (x_1.i_L - u_1.i_out) * Cline_r - u_1.i_out * u_2.R,
+        ])
+
+    def eq_piLine_loadR(self, node1, node2):
+        """
+        Connect piLine (node1) to loadVarR (node2).
+        """
+        x_1, u_1, x_2, u_2 = self.get_info(node1, node2)
+        Cline_r = self.graph.nodes[node1]['params'][f'R_c_{node1}']
+        R = self.graph.nodes[node2]['params'][f'R_{node2}']
+        return sp.Matrix([
+            x_1.v_Cout + (x_1.i_L - u_1.i_out) * Cline_r - u_1.i_out * R,
         ])
 
     def eq_VsourceR_piLine(self, node1, node2):

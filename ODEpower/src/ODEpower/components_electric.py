@@ -90,49 +90,6 @@ class piLine(Component):
         return {id: {'name': 'piLine', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'electric', 'control': False}}
 
 ###############################################################
-### piline + Rload
-###############################################################
-class piLineRload(Component):
-    def generate_equation(self):
-        """
-        Generate the ODEs for a piLineRload component (piLine with resistive load).
-
-        States (x):
-            v_Cin  : Voltage at input-side capacitor
-            i_L    : Inductor current
-            v_Cout : Voltage at output-side capacitor
-        Inputs (u):
-            i_in   : Input current
-        Outputs:
-            i_load : Algebraic load current (computed internally)
-
-        Returns:
-            dict: Contains symbolic ODEs, state/input namedtuples, and variable names for documentation.
-        """
-        id = self.id
-        p = self.properties
-        # Parameter definition
-        if self.forceSymbol or p is None:
-            p = self.set_default_params(id, ['C', 'R_c', 'R', 'L', 'Len'])
-        params = {k + '_' + str(id): v for k, v in p.items()}
-
-        x, u = self.set_vars_tuple(id,
-            ['v_Cin', 'i_L', 'v_Cout'],  # States
-            ['i_in']                     # Inputs
-        )
-
-        # Algebraic equation for load current
-        i_load = (x.v_Cout + x.i_L * p['R_c']) / (p['R_c'] + p['R'])
-
-        # ODE Equations using named attributes
-        odes = sp.Matrix([
-            (-x.i_L + u.i_in) / (p['C'] * p['Len'] / 2),
-            (x.v_Cin + (u.i_in - x.i_L) * p['R_c'] - x.i_L * p['R'] * p['Len'] - x.v_Cout - (x.i_L - i_load) * p['R_c']) / (p['L'] * p['Len']),
-            (x.i_L - i_load) / (p['C'] * p['Len'] / 2),
-        ])
-        
-        return {id: {'name': 'piLineRload', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'electric', 'control': False}}
-###############################################################
 ### loadVarRL
 ###############################################################
 class loadVarRL(Component):
@@ -203,23 +160,15 @@ class loadRL(Component):
         ])
         return {id: {'name': 'loadRL', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'electric', 'control': False}}
 
-
-###############################################################
-### DAB FHA 
-###############################################################
-class dabFHA(Component):
+class loadR(Component):
     def generate_equation(self):
         """
-        Generate the ODEs for a DAB FHA (Dual Active Bridge, Fundamental Harmonic Approximation) converter.
+        Generate the ODEs for a resistor load.
 
         States (x):
-            v_Cout : Output capacitor voltage
-            i_tR   : Transformer current (real part)
-            i_tI   : Transformer current (imaginary part)
+            (none)
         Inputs (u):
-            v_in   : Input voltage
-            i_out  : Output current
-            d      : Phase shift (degrees)
+            (none)
 
         Returns:
             dict: Contains symbolic ODEs, state/input namedtuples, and variable names for documentation.
@@ -229,32 +178,16 @@ class dabFHA(Component):
 
         # Parameter definition
         if self.forceSymbol or p is None:
-            p = self.set_default_params(id, ['fs', 'Cout', 'Lt', 'N'])
+            p = self.set_default_params(id, ['R'])
         params = {k + '_' + str(id): v for k, v in p.items()}
 
         x, u = self.set_vars_tuple(id,
-            ['v_Cout', 'i_tR', 'i_tI'],
-            ['v_in', 'i_out', 'd']
+            [],
+            []
         )
 
-        ws = 2 * sp.pi * p['fs']
-        u2 = u.d * sp.pi / 180
-
-        odes = sp.Matrix([
-            - x.i_tR * 2 / (sp.pi * p['Cout']) * sp.sin(u2)
-            - x.i_tI * 2 / (sp.pi * p['Cout']) * sp.cos(u2)
-            - u.i_out / p['Cout'],
-
-            x.v_Cout * 4 / (sp.pi * p['Lt']) * sp.sin(u2)
-            + x.i_tI * ws,
-
-            x.v_Cout * 4 / (sp.pi * p['Lt']) * sp.cos(u2)
-            - x.i_tR * ws
-            - (4 * p['N']) / (sp.pi * p['Lt']) * u.v_in
-        ])
-        return {id: {'name': 'dabFHA', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'electric', 'control': False}}
-
-
+        odes = sp.Matrix([])
+        return {id: {'name': 'loadR', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'electric', 'control': False}}
 
 ###############################################################
 ### Vsource with R
@@ -495,113 +428,6 @@ class dabGAM(Component):
         # ODE for input capacitor voltage (Cin)
         sum_cin = u.i_in / Cin
         sum_cout = -u.i_out / (Cout * correction)
-
-        for k in range(1, order + 1):
-            if not (k & 1):
-                continue
-            iR = getattr(x, f'i_t{k}R')
-            iI = getattr(x, f'i_t{k}I')
-            sum_cin += (0 / (sp.pi * Cin * k)) * iR + (2 / (sp.pi * Cin * k)) * iI
-            sum_cout += N * (
-                (-2 / (sp.pi * Cout * k)) * iR * sp.sin(k * u2) +
-                (-2 / (sp.pi * Cout * k)) * iI * sp.cos(k * u2)
-            )
-
-        # Harmonic inductor dynamics (real/imag parts)
-        odes = []
-        for k in range(1, order + 1):
-            if not (k & 1):
-                continue
-            iR = getattr(x, f'i_t{k}R')
-            iI = getattr(x, f'i_t{k}I')
-
-            expr_iR = (
-                x.v_Cout * 4 * N * sp.sin(k * u2) / (k * sp.pi)
-                - Rt * iR
-            ) / Lt + k * ws * iI
-
-            expr_iI = (
-                x.v_Cout * 4 * N * sp.cos(k * u2) / (k * sp.pi)
-                - 4 * x.v_Cin / (k * sp.pi)
-                - Rt * iI
-            ) / Lt - k * ws * iR
-
-            odes.append(expr_iR)
-            odes.append(expr_iI)
-
-        # Append capacitor voltage dynamics
-        odes.append(sum_cin)
-        odes.append(sum_cout)
-
-        return {
-            id: {'name': 'dabGAM',
-                'odes': sp.Matrix(odes),
-                'x': x,
-                'u': u,
-                'params': params,
-                'id': id,
-                'type': 'electric',
-                'control': False
-            }
-        }
-
-class dabGAM2(Component):
-    def generate_equation(self):
-        """
-        Generate the ODEs for a DAB GAM (Dual Active Bridge, Generalized Averaged Model) converter.
-
-        States (x):
-            i_t{k}R : Harmonic k transformer current (real part), for k=1..order
-            i_t{k}I : Harmonic k transformer current (imag part), for k=1..order
-            v_Cin   : Input capacitor voltage
-            v_Cout  : Output capacitor voltage
-        Inputs (u):
-            i_in    : Input current
-            i_out   : Output current
-            d       : Phase shift (degrees)
-
-        Returns:
-            dict: Contains symbolic ODEs, state/input namedtuples, and variable names for documentation.
-        """
-        id = self.id
-        p = self.properties
-        order = p.get('order', 1)  # M (number of harmonics)
-
-        # Parameter definition
-        if self.forceSymbol or p is None:
-            p = self.set_default_params(
-                id,
-                ['fs', 'Cin', 'Cout', 'Lt', 'Rt', 'N', 'RL']
-            )
-        params = {k + '_' + str(id): v for k, v in p.items()}
-
-        # Extract parameters
-        fs, N, Lt, Rt, Cin, Cout, RL = p['fs'], p['N'], p['Lt'], p['Rt'], p['Cin'], p['Cout'], p['RL']
-        ws = 2 * sp.pi * fs  # Angular frequency
-
-        # Define state variable names dynamically based on harmonic order
-        state_names = []
-        for k in range(1, order + 1):
-            if not (k & 1):
-                continue
-            state_names.append(f'i_t{k}R')
-            state_names.append(f'i_t{k}I')
-        state_names.extend(['v_Cin', 'v_Cout'])
-
-        # Use named tuples for states and inputs
-        x, u = self.set_vars_tuple(id, state_names, ['i_in', 'd'])
-
-        # Correction factor for output capacitor (if present)
-        if p.get('correction', 1):
-            correction = 1
-        else:
-            correction = (((sp.pi) * (sp.pi) * u.d) * (1 - (u.d / sp.pi))) / (8 * sp.sin(u.d))
-
-        u2 = u.d * sp.pi / 180  # Phase shift in radians
-
-        # ODE for input capacitor voltage (Cin)
-        sum_cin = u.i_in / Cin
-        sum_cout = -x.v_Cout / ( RL * Cout * correction)
 
         for k in range(1, order + 1):
             if not (k & 1):

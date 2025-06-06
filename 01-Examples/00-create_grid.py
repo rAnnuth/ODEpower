@@ -21,15 +21,11 @@ Steps covered:
 """
 
 #%%
-# (Optional) Enable autoreload for interactive development (Jupyter/IPython)
-%reload_ext autoreload
-%autoreload 2
-
 # Import necessary modules
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 import numpy as np
 
 #%%
@@ -45,16 +41,23 @@ grid.graph_reset()
 
 #%%
 # 3. Add component nodes with explicit parameters
+# Add a voltage source with resistance
+grid.add_node(VsourceR(1, {
+    "R": 1e-3,         # Series resistance [Ohm]
+}, forceSymbol=forceSym))
+
 # Add a Dual Active Bridge (DAB) component with specific parameters
-grid.add_node(dabFHA(1, {
+grid.add_node(dabGAM(2, {
     "fs": 5e3,         # Switching frequency [Hz]
     "N": 3900/30000,   # Transformer turns ratio
     "Lt": 3.0420e-5,   # Leakage inductance [H]
+    "Rt": 1e-3,        # Transformer resistance [Ohm]
+    "Cin": 2.8444e-5,  # Input capacitance [F]
     "Cout": 2.8444e-4, # Output capacitance [F]
 }, forceSymbol=forceSym))
 
 # Add a pi-line component representing a transmission line
-grid.add_node(piLine(2, {
+grid.add_node(piLine(3, {
     "R": 1,        # Line resistance [Ohm]
     "L": 277e-6,   # Line inductance [H]
     "C": 100e-9,   # Line capacitance [F]
@@ -63,7 +66,7 @@ grid.add_node(piLine(2, {
 }, forceSymbol=forceSym))
 
 # Add a variable RL load component
-grid.add_node(loadVarRL(3, {
+grid.add_node(loadVarRL(4, {
     "L": 1e-3,     # Load inductance [H]
 }, forceSymbol=forceSym))
 
@@ -72,6 +75,7 @@ grid.add_node(loadVarRL(3, {
 # Define the connections between the components
 grid.add_edge(1, 2)  # Connect DAB to pi-line
 grid.add_edge(2, 3)  # Connect pi-line to load
+grid.add_edge(3, 4)  # Connect pi-line to load
 
 #%%
 # 5. Visualize the electrical grid structure
@@ -81,7 +85,7 @@ grid.plot()
 #%%
 # 6. Set input variable names (must match expected component inputs)
 # Define the input variables for the grid
-grid.set_input(['v_in_1', 'R_3', 'd_1'])
+grid.set_input(['v_in_1', 'R_4', 'd_2'])
 
 #%%
 # 7. Print the mapping of input variables (for reference)
@@ -103,6 +107,7 @@ grid.set_input_values(
 # Generate ODE equations and calculate operating points
 grid.odes_lamdify()
 grid.get_op()
+grid.mat.get_op()
 
 # Run time-domain simulation
 grid.sim_ode(setOp=True, Tsim=1e-4)

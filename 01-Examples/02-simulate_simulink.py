@@ -22,14 +22,11 @@ Steps covered:
 11. Plotting results
 """
 
-# (Optional) Enable autoreload for interactive development (Jupyter/IPython)
-%reload_ext autoreload
-%autoreload 2
-
+#%%
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 import numpy as np
 
 # Step 1: Create the ODEpower grid object

@@ -4,35 +4,25 @@ from tests.base import MatlabModelTestCase
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings # Change this
 
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 
 # exhaustive parameter grid for this model ------------------------
 PARAM_SPACE = {
-    "Rs"   : [1e-4,100],
-    "R"   : [100],
-    #"R"   : [1e-9,100],
-    "L"   : [1],
-    #"L"   : [1e-9,1],
-    #"C"   : [1e-9,1],
-    "C"   : [1],
-    #"R_c"   : [1e-6,50],
-    "R_c"   : [50],
-    #"Len" : [1e-3,1e5],
-    "Len" : [1e5],
-    "i_in" : [1,2],
-    #"i_out" : [.2,.9],
-    "i_out" : [.9,1],
-    "Tsim" : [1e-3],
-    "dtMax": [1e-6]
+    "R"   : [1e-3,100],
+    "L"   : [1e-5,1],
+    "v_in" : [1,2e3],
+    "Tsim" : [1e-5],
+    "dtMax": [1e-10],
+    "tolWindow": [1e-7],
 }
 
-class Test_VsourceR_piLine(MatlabModelTestCase):
+class Test_loadRL(MatlabModelTestCase):
 
     @classmethod
     def setUpClass(cls):
         # expensive one-off initialisation goes here
-        cls.model = "c_VsourceR_piLine"
+        cls.model = "loadRL"
 
     def test_parameter_grid(self):
         keys, values = zip(*PARAM_SPACE.items())
@@ -45,28 +35,20 @@ class Test_VsourceR_piLine(MatlabModelTestCase):
             # subTest => each combo is reported separately
             with self.subTest(**p):
                 grid.graph_reset()
-                grid.add_node(VsourceR(1,{
-                    "R": p['Rs'],
-                }))
-                grid.add_node(piLine(2,{
-                    "R": p['R'],
+                grid.add_node(loadRL(1,{
                     "L": p['L'],
-                    "C": p['C'],
-                    "R_c": p['R_c'],
-                    "Len": p['Len']
+                    "R": p['R']
                 }))
-                grid.add_edge(1,2)
-
-                grid.set_input(['v_in_1','i_out_2'])
+                grid.set_input(['v_in_1'])
 
                 grid.set_input_values(
-                    np.array([p['i_in'],p['i_out']]),
-                    np.array([2*p['i_in'],p['i_out']]),
+                    np.array([p['v_in']]),
+                    np.array([2*p['v_in']]),
                     {'Tsim':p['Tsim'],'Tstep':p['Tsim']/2},
                     show = False
                 )
                 grid.odes_lamdify()
-                grid.sim_ode(max_step=p['dtMax'])
+                grid.sim_ode(max_step=p['dtMax'],rtol=1e-8)
                 grid.mat.eval(f'addpath("{self.model_path}");')
 
                 grid.mat.set_input({"dtMax":p['dtMax']})
@@ -81,6 +63,7 @@ class Test_VsourceR_piLine(MatlabModelTestCase):
                                                 grid.sol_simulink.x[key],
                                                 key,
                                                 p,
+                                                tolWindow=True
                                                 )
 
 

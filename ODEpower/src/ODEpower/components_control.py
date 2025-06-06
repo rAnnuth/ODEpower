@@ -8,7 +8,7 @@ The structure is compatible with the Component base class from components_electr
 """
 
 from abc import ABC, abstractmethod
-from components.components_electric import Component
+from ODEpower.components_electric import Component
 from scipy.signal import TransferFunction, tf2ss
 import control as ct
 import sympy as sp
@@ -92,7 +92,7 @@ class delayPI(CtrlComponent):
             (-x.Td + u_in) / p['Td'],
             u.ref - x.Td,
         ])
-        return {id: {'name': 'PI', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'ctrl', 'law': law}}
+        return {id: {'name': 'delayPI', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'ctrl', 'law': law}}
 
 ###############################################################
 ### LowPass PI
@@ -166,40 +166,11 @@ class delayLpPIDroop(CtrlComponent):
             p['Ki'] * (u_droop - tfy),
             tfode2
         ])
-        return {id: {'name': 'LpPIDroop', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'ctrl', 'law': law}}
+        return {id: {'name': 'delayLpPIDroop', 'odes': odes, 'x': x, 'u': u, 'params': params, 'id': id, 'type': 'ctrl', 'law': law}}
 
 ###############################################################
 ### Generic TF
 ###############################################################
-
-# TODO NOT WORKING YET!!!!
-class tf_fkt(CtrlComponent):
-    """
-    Generic transfer function controller (not fully implemented).
-    """
-    def generate_equation(self):
-        # TODO: Not working yet!
-        if (self.u_in is None) or (self.u_out is None):
-            raise ValueError('No reference id for control set')
-        u_in, u_out = self.u_in, self.u_out
-        id = self.id
-        p = self.properties
-        # Parameter definition
-        if self.forceSymbol or p is None:
-            p = self.set_default_params(id, ['_tf'])
-        params = {k + '_' + str(id): v for k, v in p.items()}
-        x, x_str, u, u_str = self.set_vars(id, ['T_lp1', 'T_lp2', 'xI'], ['ref'])
-        tf1 = TransferFunction(1, 1 + p['Td'] * s, s)
-        tf = (tf1 * TransferFunction(p['Fb'] * 2 * sp.pi, s + p['Fb'] * 2 * sp.pi, s)).doit()
-        tfode, tfy = tf2ode(tf, x[:-1], u_in)
-        # Algebraic law for controller output
-        law = {u_out: (p['Kp'] * (u[0] - tfy) + x[2])}
-        # ODEs for filter and integrator
-        odes = sp.Matrix([
-            tfode,
-            p['Ki'] * (u[0] - tfy),
-        ])
-        return {id: {'name': 'LpPI', 'odes': odes, 'x': x, 'u': u, 'x_str': x_str, 'u_str': u_str, 'params': params, 'id': id, 'type': 'ctrl', 'law': law}}
 
 def symbolic_tf_to_numeric(tf_sympy):
     """

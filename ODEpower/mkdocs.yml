@@ -27,6 +27,7 @@ nav:
 
 plugins:
   - search
+  - include-markdown
   - mkdocstrings:
       default_handler: python
 
@@ -34,4 +35,4 @@ extra:
   mkdocstrings:
     handlers:
       python:
-        paths: ["."]
+        paths: ["src"]

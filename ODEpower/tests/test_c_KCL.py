@@ -4,32 +4,34 @@ from tests.base import MatlabModelTestCase
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings # Change this
 
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 
 # exhaustive parameter grid for this model ------------------------
 PARAM_SPACE = {
-    "Kp" : [1,10],
-    "Ki"   : [1e-3,1e5],
-    "Td"   : [1e-6, 1e3],
-    "Fb"   : [1e-3,1e3],
-    "Fb_d" : [2e-3,2e3],
-    "K_d"  : [.4,10],
-    "P_d"  : [.1,100],
-    "meas" : [1,2],
-    "i_meas": [3,-2.4],
-    "ref"  : [-.9,1],
-    "Tsim" : [1e-6],
-    "dtMax": [1e-10],
-    "tolWindow": [1e-8],
+    "R"   : [30,100],
+    "R1"   : [20,300],
+    "R2"   : [10,500],
+    #"R"   : [1e-9,100],
+    "L"   : [1,.1],
+    #"L"   : [1e-9,1],
+    #"C"   : [1e-9,1],
+    "C"   : [1],
+    "R_c"   : [1e-5,500],
+    "Len" : [1e-3,1e5],
+    "i_in" : [1,2],
+    "i_in1" : [1.5,2.5],
+    "i_out" : [.9,1],
+    "Tsim" : [1e-4],
+    "dtMax": [1e-6]
 }
 
-class Test_delayLpPIDroop(MatlabModelTestCase):
+class Test_KCL(MatlabModelTestCase):
 
     @classmethod
     def setUpClass(cls):
         # expensive one-off initialisation goes here
-        cls.model = "delayLpPIDroop"
+        cls.model = "c_KCL"
 
     def test_parameter_grid(self):
         keys, values = zip(*PARAM_SPACE.items())
@@ -42,27 +44,40 @@ class Test_delayLpPIDroop(MatlabModelTestCase):
             # subTest => each combo is reported separately
             with self.subTest(**p):
                 grid.graph_reset()
-                grid.add_node(delayLpPIDroop(1,[sp.Symbol('meas_1'),sp.Symbol('i_meas_1')],sp.Symbol('out_1'),{
-                    "Kp": p['Kp'],
-                    "Ki": p['Ki'],
-                    "Fb": p['Fb'],
-                    "Fb_d": p['Fb_d'],
-                    "K_d": p['K_d'],
-                    "P_d": p['P_d'],
-                    "Td": p['Td'],
+
+                grid.add_node(piLine(1,{
+                    "R": p['R'],
+                    "L": p['L'],
+                    "C": p['C'],
+                    "R_c": p['R_c'],
+                    "Len": p['Len']
                 }))
 
-                from collections import namedtuple
-                u = grid.graph.nodes(data=True)[1]['u']
-                inputs = namedtuple('inputs', u._fields + ('meas',) + ('i_meas',))
-                grid.graph.nodes(data=True)[1]['u'] =  inputs(*u, sp.Symbol('meas_1'), sp.Symbol('i_meas_1'))
+                grid.add_node(piLine(2,{
+                    "R": p['R1'],
+                    "L": p['L'],
+                    "C": p['C'],
+                    "R_c": p['R_c'],
+                    "Len": p['Len']
+                }))
 
-                grid.set_input(['ref_1','meas_1','i_meas_1'])
-                grid.set_output(grid.graph.nodes(data=True)[1]['law'])
+                grid.add_node(piLine(3,{
+                    "R": p['R2'],
+                    "L": p['L'],
+                    "C": p['C'],
+                    "R_c": p['R_c'],
+                    "Len": p['Len']
+                }))
+
+                grid.add_edge(1,3)
+                grid.add_edge(2,3)
+                grid.add_kcl(3)
+
+                grid.set_input(['i_in_1','i_in_2','i_out_3'])
 
                 grid.set_input_values(
-                    np.array([p['ref'],p['meas'],p['i_meas']]),
-                    np.array([2*p['ref'],p['meas'],p['i_meas']]),
+                    np.array([p['i_in'],p['i_in1'],p['i_out']]),
+                    np.array([2*p['i_in'],3*p['i_in1'],p['i_out']]),
                     {'Tsim':p['Tsim'],'Tstep':p['Tsim']/2},
                     show = False
                 )
@@ -75,14 +90,13 @@ class Test_delayLpPIDroop(MatlabModelTestCase):
 
                 grid.mat.sim_simulink()
 
-                for key in ['out_1']:
+                for key in grid.sol_ode.x.keys():
                     self._compare_with_reference(grid.sol_ode.t,
-                                                grid.sol_ode.y[key],
+                                                grid.sol_ode.x[key],
                                                 grid.sol_simulink.t[key],
                                                 grid.sol_simulink.x[key],
                                                 key,
                                                 p,
-                                                tolWindow=True
                                                 )
 
 

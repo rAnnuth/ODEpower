@@ -58,28 +58,29 @@ class ODEmatlab:
         self.model_path.mkdir(parents=True, exist_ok=True)
 
         # Step 4: Add necessary paths to MATLAB environment
-        script_path = Path(__file__).parent.resolve() / '..' / 'matlab'
+        script_path = Path(__file__).parent.resolve() / '..' / '..' / 'matlab'
         self.eval(f"addpath('{str(script_path)}');", 0)
         self.eval(f"addpath('{str(self.model_path)}');", 0)
 
 
-    def get_op(self, initialGuess=False):
+    def get_op(self, initialGuess=False, get_ss=True):
         """
         Calculate the operating point using MATLAB's vpasolve.
 
         Args:
             initialGuess (bool): If True, use an initial guess for the solver.
+            get_ss: If True, update the state-space matrices at the operating point.
 
         Raises:
             ValueError: If unable to find the operating point.
         """
         # Step 1: Define all state variables as symbolic in MATLAB
-        for x in self.x:
+        for x in self.parent.x:
             self.eval(f'{str(x)} = sym("{x}","real");')
 
         # Step 2: Prepare the ODE and state variable arrays for MATLAB
-        mat_ode = ('[' + ','.join(str(ode) for ode in self.odes_) + ']').replace('**','^')
-        mat_x = '[' + ','.join(str(x) for x in self.x) + ']'
+        mat_ode = ('[' + ','.join(str(ode) for ode in self.parent.odes_) + ']').replace('**','^')
+        mat_x = '[' + ','.join(str(x) for x in self.parent.x) + ']'
         self.eval(f'eq_subs = {mat_ode};')
         self.eval(f'stateVariables= {mat_x};')
 
@@ -91,11 +92,14 @@ class ODEmatlab:
         try:
             # Step 4: Convert the result to a cell array and extract the numeric values
             self.eval(f'StatesOperationPoint = struct2cell(StatesOperationPoint);')
-            self.op = np.array(self.eval('double([StatesOperationPoint{:}]);',out=1))[0]
+            self.parent.op = np.array(self.eval('double([StatesOperationPoint{:}]);',out=1))[0]
         except:
             # Step 5: If solution fails, set op to zeros and raise an error
-            self.op = [0 for _ in range(len(self.x))] 
+            self.parent.op = [0 for _ in range(len(self.parent.x))] 
             raise ValueError('Unable to find OP. Setting to zero')
+        
+        if get_ss:
+            self.parent.get_ss()
 
 #        This could be used to determine OP by EMT
 #        if simulink:

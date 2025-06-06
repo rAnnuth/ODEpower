@@ -4,27 +4,34 @@ from tests.base import MatlabModelTestCase
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings # Change this
 
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 
 # exhaustive parameter grid for this model ------------------------
 PARAM_SPACE = {
-    "Kp" : [0,10],
-    "Ki"   : [1e-3, 1, 1e3],
-    "Td"   : [1e-6, 1e3],
-    "meas" : [1,2],
-    "ref" : [-.9,1],
+    "R"   : [100],
+    #"R"   : [1e-9,100],
+    "L"   : [1],
+    #"L"   : [1e-9,1],
+    #"C"   : [1e-9,1],
+    "C"   : [1],
+    #"R_c"   : [1e-6,50],
+    "R_c"   : [50],
+    #"Len" : [1e-3,1e5],
+    "Len" : [1e5],
+    "i_in" : [1,2],
+    #"i_out" : [.2,.9],
+    "R_2" : [.9,1],
     "Tsim" : [1e-3],
-    "dtMax": [1e-7],
-    "tolWindow": [1e-6],
+    "dtMax": [1e-6]
 }
 
-class Test_delayPI(MatlabModelTestCase):
+class Test_piLine_loadVarR(MatlabModelTestCase):
 
     @classmethod
     def setUpClass(cls):
         # expensive one-off initialisation goes here
-        cls.model = "delayPI"
+        cls.model = "c_piLine_loadVarR"
 
     def test_parameter_grid(self):
         keys, values = zip(*PARAM_SPACE.items())
@@ -37,23 +44,22 @@ class Test_delayPI(MatlabModelTestCase):
             # subTest => each combo is reported separately
             with self.subTest(**p):
                 grid.graph_reset()
-                grid.add_node(delayPI(1,sp.Symbol('meas_1'),sp.Symbol('out_1'),{
-                    "Kp": p['Kp'],
-                    "Ki": p['Ki'],
-                    "Td": p['Td'],
+                grid.add_node(piLine(1,{
+                    "R": p['R'],
+                    "L": p['L'],
+                    "C": p['C'],
+                    "R_c": p['R_c'],
+                    "Len": p['Len']
                 }))
+                grid.add_node(loadVarR(2,{
+                }))
+                grid.add_edge(1,2)
 
-                from collections import namedtuple
-                u = grid.graph.nodes(data=True)[1]['u']
-                inputs = namedtuple('inputs', u._fields + ('meas',))
-                grid.graph.nodes(data=True)[1]['u'] =  inputs(*u, sp.Symbol('meas_1'))
-
-                grid.set_input(['ref_1','meas_1'])
-                grid.set_output(grid.graph.nodes(data=True)[1]['law'])
+                grid.set_input(['i_in_1','R_2'])
 
                 grid.set_input_values(
-                    np.array([p['ref'],p['meas']]),
-                    np.array([2*p['ref'],p['meas']]),
+                    np.array([p['i_in'],p['R_2']]),
+                    np.array([2*p['i_in'],p['R_2']]),
                     {'Tsim':p['Tsim'],'Tstep':p['Tsim']/2},
                     show = False
                 )
@@ -66,14 +72,13 @@ class Test_delayPI(MatlabModelTestCase):
 
                 grid.mat.sim_simulink()
 
-                for key in ['out_1']:
+                for key in grid.sol_ode.x.keys():
                     self._compare_with_reference(grid.sol_ode.t,
-                                                grid.sol_ode.y[key],
+                                                grid.sol_ode.x[key],
                                                 grid.sol_simulink.t[key],
                                                 grid.sol_simulink.x[key],
                                                 key,
                                                 p,
-                                                tolWindow=True
                                                 )
 
 

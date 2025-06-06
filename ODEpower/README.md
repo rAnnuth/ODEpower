@@ -1,9 +1,4 @@
-![](src/icon.png)
-
-<p align="center">
-<a href="https://odepower.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/odepower/badge/?version=latest"></a>
-</p>
-
+![](../src/icon.png)
 
 # ODEpower
 
@@ -31,11 +26,6 @@ cd ODEpower
 pip install -e .
 ```
 
-rm $CONDA_PREFIX/lib/libstdc++.so.6
-
-### Casadi
-Add compiler path
-
 ## Documentation
 
 Full documentation is available at [https://odepower.readthedocs.io](https://odepower.readthedocs.io)
@@ -52,12 +42,4 @@ Contributions are welcome! Please open issues or pull requests on GitHub.
 
 ## License
 
-This project is licensed under GNU General Public License v3 (GPLv3). See `ODEpower/LICENSE.txt` for details.
-
-
-## TOOD
-- Mention the Matlab Library
-- Make Matlab optional
-- Add AC models
-- Check Docu
-- Use modified config for examples
+This project is licensed under GNU General Public License v3 (GPLv3). See `LICENSE.txt` for details.

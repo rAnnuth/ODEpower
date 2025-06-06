@@ -4,8 +4,8 @@ from tests.base import MatlabModelTestCase
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings # Change this
 
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 
 # exhaustive parameter grid for this model ------------------------
 PARAM_SPACE = {

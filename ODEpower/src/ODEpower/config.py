@@ -18,8 +18,6 @@ class settings:
         DEBUG (bool): Enable or disable debug mode.
         LOG (bool): Enable or disable logging.
         pySolver (str): Python solver to use (default: 'LSODA').
-        casadiEnable (bool): Enable or disable CasADi integration.
-        casadiPath (str): Path to the CasADi installation.
         matlab_engine: MATLAB engine instance.
         matlab_enable (bool): Enable or disable MATLAB integration.
         matlab_model_path (str): Path to the MATLAB model files.
@@ -27,8 +25,6 @@ class settings:
     DEBUG: bool = False
     LOG: bool = False 
     pySolver: str = 'LSODA' # ...
-    casadiEnable: bool = True
-    casadiPath: str = ''
     matlab_engine = None
     matlab_enable: bool = True 
     matlab_model_path: str = ''

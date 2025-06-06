@@ -6,12 +6,14 @@ function update_block_parameters(model_name)
         'loadVarRL', @loadVarRLHandler;
         'VsourceR', @VsourceRHandler;
         'loadRL', @loadRLHandler;
+        'loadR', @loadRHandler;
         'Buck_Switching', @buckHandler;
         'dabGAM', @dabGAMHandler;
         'DAB_Switching', @DABSwitchingHandler;
         'delayLpPIDroop', @delayLpPIDroopHandler;
-        'delayPIDroop', @delayPIDroopHandler;
+        'delayPI', @delayPIHandler;
         'PI', @PIHandler
+        'LpPI', @LpPIHandler;
     };
 
     % Get top-level blocks
@@ -71,6 +73,12 @@ function loadRLHandler(model_name, block_name)
     [~, num] = extract(block_name);
     path = @(comp) strcat(model_name, '/', block_name, '/', comp);
     set_param(path('Lload'), 'l', sprintf('L_%s', num));
+    set_param(path('Rload'), 'r', sprintf('R_%s', num));
+end
+
+function loadRHandler(model_name, block_name)
+    [~, num] = extract(block_name);
+    path = @(comp) strcat(model_name, '/', block_name, '/', comp);
     set_param(path('Rload'), 'r', sprintf('R_%s', num));
 end
 
@@ -134,6 +142,16 @@ function delayLpPIDroopHandler(model_name, block_name)
     set_param(path('K_d'), 'gain', sprintf('K_d_%s', num));
     set_param(path('td'), 'gain', sprintf('1/Td_%s', num));
     set_param(path('td2'), 'gain', sprintf('1/Td_%s', num));
+    set_param(path('kp'), 'gain', sprintf('Kp_%s', num));
+    set_param(path('ki'), 'gain', sprintf('Ki_%s', num));
+    set_param(path('fb'), 'gain', sprintf('2*pi*Fb_%s', num));
+    set_param(path('fb2'), 'gain', sprintf('2*pi*Fb_%s', num));
+end
+
+function LpPIHandler(model_name, block_name)
+    [~, num] = extract(block_name);
+    path = @(comp) strcat(model_name, '/', block_name, '/', comp);
+
     set_param(path('kp'), 'gain', sprintf('Kp_%s', num));
     set_param(path('ki'), 'gain', sprintf('Ki_%s', num));
     set_param(path('fb'), 'gain', sprintf('2*pi*Fb_%s', num));

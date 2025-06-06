@@ -4,13 +4,14 @@ from tests.base import MatlabModelTestCase
 from ODEpower.ODEpower import ODEpower
 from ODEpower.config import settings # Change this
 
-from components.components_electric import *
-from components.components_control import *
+from ODEpower.components_electric import *
+from ODEpower.components_control import *
 
 # exhaustive parameter grid for this model ------------------------
 PARAM_SPACE = {
     "Kp" : [0,10],
-    "Ki"   : [0, 1, 1e3],
+    "Ki"   : [1e-3, 1, 1e3],
+    "Td"   : [1e-6, 1e3],
     "meas" : [1,2],
     "ref" : [-.9,1],
     "Tsim" : [1e-3],
@@ -18,12 +19,12 @@ PARAM_SPACE = {
     "tolWindow": [1e-6],
 }
 
-class Test_PI(MatlabModelTestCase):
+class Test_delayPI(MatlabModelTestCase):
 
     @classmethod
     def setUpClass(cls):
         # expensive one-off initialisation goes here
-        cls.model = "PI"
+        cls.model = "delayPI"
 
     def test_parameter_grid(self):
         keys, values = zip(*PARAM_SPACE.items())
@@ -36,9 +37,10 @@ class Test_PI(MatlabModelTestCase):
             # subTest => each combo is reported separately
             with self.subTest(**p):
                 grid.graph_reset()
-                grid.add_node(PI(1,sp.Symbol('meas_1'),sp.Symbol('out_1'),{
+                grid.add_node(delayPI(1,sp.Symbol('meas_1'),sp.Symbol('out_1'),{
                     "Kp": p['Kp'],
                     "Ki": p['Ki'],
+                    "Td": p['Td'],
                 }))
 
                 from collections import namedtuple

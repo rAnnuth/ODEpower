@@ -8,8 +8,8 @@ Classes:
 """
 
 #%%
-from components.connection import AlgebraicEquation
-from components.components_electric import *
+from ODEpower.components_connection import AlgebraicEquation
+#from components.components_electric import *
 from tabulate import tabulate
 import pandas as pd
 
@@ -162,9 +162,18 @@ class ODEgraph:
         self.odes, self.x, self.u, self.params = sp.Matrix(), sp.Matrix(), sp.Matrix(), dict()
         # Aggregate node equations and variables
         for node_id, data in self.graph.nodes(data=True):
-            self.odes = self.odes.col_join(safe_join(data.get('odes', None)))
-            self.x = self.x.col_join(safe_join(data.get('x', None)))
-            self.u = self.u.col_join(safe_join(data.get('u', None)))
+            try:
+                self.odes = self.odes.col_join(safe_join(data.get('odes', None)))
+            except:
+                pass # In case the component has no odes
+            try:
+                self.x = self.x.col_join(safe_join(data.get('x', None)))
+            except:
+                pass # In case the component has no satates
+            try:
+                self.u = self.u.col_join(safe_join(data.get('u', None)))
+            except:
+                pass # In case the component has no inputs
             self.params.update(data.get('params', {}))
 
         # Aggregate edge algebraic equations

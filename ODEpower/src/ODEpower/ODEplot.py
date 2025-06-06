@@ -7,6 +7,20 @@ Classes:
     ODEplot: Provides plotting utilities for ODEpower.
 """
 
+# TODO Temporary .. make a plot fkt self.plot
+from .prettyPlot import plot
+
+import numpy as np
+import matplotlib.cm as cm
+from matplotlib.colors import Normalize
+import matplotlib.pyplot as plt
+import control as ct
+import re
+
+
+
+
+
 class ODEplot:
     """
     Provides plotting utilities for visualizing system properties.
