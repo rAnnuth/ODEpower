@@ -26,7 +26,9 @@ jobs:
           pip install --upgrade setuptools wheel build
       - name: Build package
         working-directory: ./ODEpower
-        run: python -m build
+        run: |
+          rm -rf dist/ build/ *.egg-info
+          python -m build
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
