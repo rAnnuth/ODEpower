@@ -1,3 +1,3 @@
 # ODEtool
 
-::: ODEpower.ODEtool
+::: src.ODEpower.ODEtool

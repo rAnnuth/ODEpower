@@ -1,3 +1,3 @@
 # ODEpower
 
-::: ODEpower.ODEpower
+::: src.ODEpower.ODEpower

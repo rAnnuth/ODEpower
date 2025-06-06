@@ -1,3 +1,3 @@
 # ODEmatlab
 
-::: ODEpower.ODEmatlab
+::: src.ODEpower.ODEmatlab
